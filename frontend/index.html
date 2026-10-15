@@ -1,0 +1,68 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RecipeFinder AI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="navbar">
+        <a href="#" class="logo">🍲 RecipeFinder AI</a>
+        <span class="nav-text">Discover your next favourite meal</span>
+    </header>
+
+    <main>
+        <section class="hero">
+            <span class="tag">YOUR PERSONAL RECIPE FINDER</span>
+            <h1>Find recipes.<br><span>Fall in love with food.</span></h1>
+            <p>Search by dish, ingredient, or craving and discover recipes from our collection.</p>
+
+            <form id="searchForm" class="search-box">
+                <span class="search-icon">⌕</span>
+                <input
+                    id="searchInput"
+                    type="search"
+                    placeholder="Try crispy potatoes, chicken, pasta..."
+                    required
+                >
+                <button id="searchButton" type="submit">Find Recipes →</button>
+            </form>
+
+            <div class="suggestions">
+                <span>Popular searches:</span>
+                <button type="button" data-query="crispy potatoes">🥔 Potatoes</button>
+                <button type="button" data-query="chicken recipes">🍗 Chicken</button>
+                <button type="button" data-query="pasta recipes">🍝 Pasta</button>
+                <button type="button" data-query="vegetarian recipes">🥗 Vegetarian</button>
+            </div>
+        </section>
+
+        <section class="results-section">
+            <div class="section-heading">
+                <div>
+                    <span class="tag">MADE FOR YOUR CRAVINGS</span>
+                    <h2 id="resultsTitle">Explore recipes</h2>
+                    <p id="resultsInfo">Your next delicious meal starts here.</p>
+                </div>
+                <span id="resultCount"></span>
+            </div>
+
+            <div id="message" class="message">
+                <span class="message-icon">🍽️</span>
+                <p>Search for a dish or ingredient to discover recipes.</p>
+            </div>
+
+            <div id="recipeResults" class="recipe-grid"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Made with ❤️ using Flask, FAISS and Sentence Transformers</p>
+        <p class="footer-small">RecipeFinder AI · Discover something delicious</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
