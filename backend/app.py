@@ -452,7 +452,9 @@ Identify available and missing ingredients only from the supplied data.
 Do not treat the search phrase as an ingredient unless it is explicitly listed above.
 Do not invent ingredients, cooking times, or temperatures.
 If information is unavailable, say so.
-Use simple beginner-friendly language.
+Use short sentences and simple beginner-friendly language.
+Do not use Markdown tables, bold markers (**), italic markers (*), horizontal rules (---), or long dashes.
+Use plain numbered headings and short bullet lists instead.
 Remind users to check allergies and cook food safely.
 """
 

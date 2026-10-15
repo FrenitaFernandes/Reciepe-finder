@@ -237,7 +237,10 @@ function formatAISuggestion(text) {
 
     const lines = String(text)
         .replace(/\r\n/g, "\n")
+        .replace(/\*\*|__/g, "")
+        .replace(/[–—]/g, "-")
         .split("\n")
+        .filter(line => !/^\s*[-*_]{3,}\s*$/.test(line))
         .flatMap(line => {
             if (!line.includes("|")) {
                 return [line];
