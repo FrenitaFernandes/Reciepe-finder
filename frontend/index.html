@@ -4,65 +4,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RecipeFinder AI</title>
+
+    <title>RecipeFinder AI | Discover Delicious Recipes</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+
+    <!-- Navigation -->
     <header class="navbar">
-        <a href="#" class="logo">🍲 RecipeFinder AI</a>
-        <span class="nav-text">Discover your next favourite meal</span>
+        <a href="#" class="logo">
+            <span class="logo-icon">🍲</span>
+            RecipeFinder <span class="logo-ai">AI</span>
+        </a>
+
+        <span class="nav-text">
+            Discover your next favourite meal
+        </span>
     </header>
 
+
     <main>
+
+        <!-- Hero Section -->
         <section class="hero">
-            <span class="tag">YOUR PERSONAL RECIPE FINDER</span>
-            <h1>Find recipes.<br><span>Fall in love with food.</span></h1>
-            <p>Search by dish, ingredient, or craving and discover recipes from our collection.</p>
 
-            <form id="searchForm" class="search-box">
-                <span class="search-icon">⌕</span>
-                <input
-                    id="searchInput"
-                    type="search"
-                    placeholder="Try crispy potatoes, chicken, pasta..."
-                    required
-                >
-                <button id="searchButton" type="submit">Find Recipes →</button>
-            </form>
+            <div class="hero-layout">
 
-            <div class="suggestions">
-                <span>Popular searches:</span>
-                <button type="button" data-query="crispy potatoes">🥔 Potatoes</button>
-                <button type="button" data-query="chicken recipes">🍗 Chicken</button>
-                <button type="button" data-query="pasta recipes">🍝 Pasta</button>
-                <button type="button" data-query="vegetarian recipes">🥗 Vegetarian</button>
+                <!-- Hero Content -->
+                <div class="hero-content">
+
+                    <span class="tag">
+                        YOUR PERSONAL RECIPE FINDER
+                    </span>
+
+                    <h1>
+                        Find recipes.<br>
+                        <span>Fall in love with food.</span>
+                    </h1>
+
+                    <p class="hero-description">
+                        Discover delicious recipes using ingredients
+                        you already have. Explore Indian and international
+                        dishes with the power of AI.
+                    </p>
+
+                    <!-- Search Form -->
+                    <form id="searchForm" class="search-box">
+
+                        <span class="search-icon">⌕</span>
+
+                        <input
+                            id="searchInput"
+                            type="search"
+                            placeholder="Enter ingredients or a dish..."
+                            required
+                        >
+
+                        <button id="searchButton" type="submit">
+                            Find Recipes →
+                        </button>
+
+                    </form>
+
+                    <!-- Popular Searches -->
+                    <div class="suggestions">
+
+                        <span>Popular searches</span>
+
+                        <button type="button" data-query="crispy potatoes">
+                            🥔 Potatoes
+                        </button>
+
+                        <button type="button" data-query="chicken recipes">
+                            🍗 Chicken
+                        </button>
+
+                        <button type="button" data-query="pasta recipes">
+                            🍝 Pasta
+                        </button>
+
+                        <button type="button" data-query="vegetarian recipes">
+                            🥗 Vegetarian
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Hero Image -->
+                <div class="hero-image-container">
+
+                    <img
+                        src="images/hero-food.png"
+                        alt="Fresh spring pesto pasta with vegetables"
+                        class="hero-food-image"
+                    >
+
+                    <div class="image-caption">
+                        <span class="caption-icon">🌿</span>
+
+                        <div>
+                            <strong>Fresh ideas, delicious meals</strong>
+                            <small>Discover something wonderful today</small>
+                        </div>
+                    </div>
+
+                </div>
+
             </div>
+
         </section>
 
+
+        <!-- Recipe Results -->
         <section class="results-section">
+
             <div class="section-heading">
+
                 <div>
                     <span class="tag">MADE FOR YOUR CRAVINGS</span>
-                    <h2 id="resultsTitle">Explore recipes</h2>
-                    <p id="resultsInfo">Your next delicious meal starts here.</p>
+
+                    <h2 id="resultsTitle">
+                        Explore recipes
+                    </h2>
+
+                    <p id="resultsInfo">
+                        Your next delicious meal starts here.
+                    </p>
                 </div>
+
                 <span id="resultCount"></span>
+
             </div>
 
+
+            <!-- Search Message -->
             <div id="message" class="message">
+
                 <span class="message-icon">🍽️</span>
-                <p>Search for a dish or ingredient to discover recipes.</p>
+
+                <p>
+                    Search for a dish or ingredient to discover recipes.
+                </p>
+
             </div>
 
+
+            <!-- Recipe Cards -->
             <div id="recipeResults" class="recipe-grid"></div>
+
         </section>
+
     </main>
 
+
+    <!-- Footer -->
     <footer>
-        <p>Made with ❤️ using Flask, FAISS and Sentence Transformers</p>
-        <p class="footer-small">RecipeFinder AI · Discover something delicious</p>
+
+        <div class="footer-content">
+
+            <a href="#" class="footer-logo">
+                🍲 RecipeFinder AI
+            </a>
+
+            <p>
+                Discover recipes. Explore flavours. Cook with creativity.
+            </p>
+
+            <p class="footer-small">
+                Made with ❤️ using Flask, FAISS, Sentence Transformers and Groq.
+            </p>
+
+        </div>
+
     </footer>
 
+
     <script src="script.js"></script>
+
 </body>
 </html>
