@@ -256,7 +256,13 @@ function openRecipeModal(recipe) {
         addModalMetaItem("Cuisine", recipe.cuisine),
         addModalMetaItem("Diet", recipe.diet),
         addModalMetaItem("Preparation", recipe.prep_time),
-        addModalMetaItem("Cooking", recipe.cook_time)
+        addModalMetaItem("Cooking", recipe.cook_time),
+        addModalMetaItem(
+            "Estimated cost",
+            recipe.estimated_cost_inr
+                ? `₹${recipe.estimated_cost_inr} (approx.)`
+                : ""
+        )
     ].filter(Boolean);
 
     if (hasRecipeValue(recipe.servings)) {
@@ -336,6 +342,14 @@ function createRecipeCard(recipe, index) {
     label.className = "recipe-label";
     label.textContent = `Recipe ${index + 1}`;
 
+    if (recipe.estimated_cost_inr) {
+        const cost = document.createElement("p");
+        cost.className = "recipe-cost";
+        cost.textContent =
+            `Estimated cost: ₹${recipe.estimated_cost_inr} (approx.; varies by location)`;
+        content.appendChild(cost);
+    }
+
     // Ingredients
     const ingredientsSection = document.createElement("section");
     ingredientsSection.className = "recipe-ingredients";
@@ -353,12 +367,29 @@ function createRecipeCard(recipe, index) {
         const matchSummary = document.createElement("p");
         matchSummary.className = "ingredient-match-summary";
         const matched = recipe.matched_ingredients || [];
+        const unused = recipe.unused_ingredients || [];
         const missing = recipe.missing_ingredients || [];
-        matchSummary.textContent = matched.length
-            ? `You have: ${matched.join(", ")}${missing.length
-                ? ` · Still needed: ${missing.join(", ")}`
-                : ""}`
-            : "None of the requested ingredients were verified in this recipe.";
+        const pantry = recipe.pantry_ingredients || [];
+        if (matched.length) {
+            const parts = [
+                recipe.match_type === "full"
+                    ? `Full match: ${matched.join(", ")}`
+                    : `Partial match: uses ${matched.join(", ")}`
+            ];
+            if (unused.length) {
+                parts.push(`Unused: ${unused.join(", ")}`);
+            }
+            if (missing.length) {
+                parts.push(`Still needed: ${missing.slice(0, 5).join(", ")}`);
+            }
+            if (pantry.length) {
+                parts.push(`Pantry basics: ${pantry.slice(0, 4).join(", ")}`);
+            }
+            matchSummary.textContent = parts.join(" · ");
+        } else {
+            matchSummary.textContent =
+                "None of the requested ingredients were verified in this recipe.";
+        }
         ingredientsSection.appendChild(matchSummary);
     }
 
@@ -856,7 +887,9 @@ async function searchRecipes(query) {
 
         if (!data.results || data.results.length === 0) {
             showMessage(
-                "We couldn't find recipes for that search. Try an ingredient like chicken, potatoes, or pasta."
+                data.filters && data.filters.budget_inr
+                    ? `No suitable recipe was found within the estimated ₹${data.filters.budget_inr} budget. Prices vary by location; try a higher budget or different ingredients.`
+                    : "We couldn't find recipes for that search. Try an ingredient like chicken, potatoes, or pasta."
             );
             return;
         }
@@ -865,6 +898,13 @@ async function searchRecipes(query) {
 
         resultCount.textContent =
             `${data.count ?? data.results.length} recipes found`;
+        if (data.partial_match_notice) {
+            resultsInfo.textContent =
+                "No recipe used every supplied ingredient. Showing the best partial matches.";
+        } else if (data.full_match_available) {
+            resultsInfo.textContent =
+                "Showing recipes that use all supplied ingredients.";
+        }
 
         data.results.forEach((recipe, index) => {
             recipeResults.appendChild(
