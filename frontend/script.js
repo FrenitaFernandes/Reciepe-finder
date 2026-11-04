@@ -10,9 +10,20 @@ const message = document.getElementById("message");
 const resultsTitle = document.getElementById("resultsTitle");
 const resultsInfo = document.getElementById("resultsInfo");
 const resultCount = document.getElementById("resultCount");
+const recipeModal = document.getElementById("recipeModal");
+const recipeModalImage = document.getElementById("recipeModalImage");
+const recipeModalTitle = document.getElementById("recipeModalTitle");
+const recipeModalStatus = document.getElementById("recipeModalStatus");
+const recipeModalMeta = document.getElementById("recipeModalMeta");
+const recipeModalIngredients = document.getElementById("recipeModalIngredients");
+const recipeModalInstructions = document.getElementById("recipeModalInstructions");
 
 // Keep only the latest search's AI response
 let currentSearchId = 0;
+let lastSearchQuery = "";
+let aiContextRecipeIds = [];
+let aiConversation = [];
+const recipeImageRequests = new Map();
 
 // Display messages safely
 function showMessage(text) {
@@ -38,6 +49,81 @@ function displayValue(value) {
     }
 
     return String(value);
+}
+
+function hasRecipeValue(value) {
+    return value !== null
+        && value !== undefined
+        && String(value).trim() !== "";
+}
+
+function getRecipeImageUrl(recipe) {
+    const imageUrl = String(recipe.image_url || "").trim();
+
+    if (/^https?:\/\//i.test(imageUrl)) {
+        return imageUrl;
+    }
+
+    return "images/hero-food.png";
+}
+
+async function loadRecipeImage(recipe, image) {
+    if (String(recipe.image_url || "").trim()) {
+        return;
+    }
+
+    const title = String(recipe.title || "").trim();
+    if (!title) {
+        return;
+    }
+    image.dataset.recipeTitle = title;
+
+    if (!recipeImageRequests.has(title)) {
+        recipeImageRequests.set(
+            title,
+            fetch(`${API_URL}/api/recipe-image?title=${encodeURIComponent(title)}`)
+                .then(response => response.ok ? response.json() : null)
+                .then(data => data && /^https?:\/\//i.test(data.image_url || "")
+                    ? data.image_url
+                    : "")
+                .catch(error => {
+                    console.error("Recipe image lookup error:", error);
+                    return "";
+                })
+        );
+    }
+
+    const imageUrl = await recipeImageRequests.get(title);
+    if (!imageUrl) {
+        return;
+    }
+
+    recipe.image_url = imageUrl;
+    if (image.dataset.recipeTitle !== title) {
+        return;
+    }
+    image.src = imageUrl;
+}
+
+function createRecipeImage(recipe) {
+    const image = document.createElement("img");
+    image.className = "recipe-image";
+    image.src = getRecipeImageUrl(recipe);
+    image.alt = `${displayValue(recipe.title)} food`;
+    image.loading = "lazy";
+    image.decoding = "async";
+
+    image.addEventListener("error", () => {
+        if (image.src.endsWith("/images/hero-food.png")) {
+            image.classList.add("recipe-image-fallback");
+            return;
+        }
+
+        image.src = "images/hero-food.png";
+    }, { once: false });
+
+    loadRecipeImage(recipe, image);
+    return image;
 }
 
 // Convert recipe ingredients into a readable list
@@ -80,7 +166,7 @@ function getIngredientList(value) {
     }
 
     return text
-        .split(/\s*;\s*/)
+        .split(/\s*[,;]\s*/)
         .map(item => item.trim())
         .filter(Boolean);
 }
@@ -107,6 +193,15 @@ function getInstructionSteps(value) {
     }
 
     // Otherwise split on sentence endings.
+    const numberedSteps = text
+        .split(/\s+(?=(?:step\s*)?\d+[\s.):\-]+[A-Z])/)
+        .map(step => step.replace(/^(?:step\s*)?\d+[\s.):\-]+/i, "").trim())
+        .filter(Boolean);
+
+    if (numberedSteps.length > 1) {
+        return numberedSteps;
+    }
+
     const sentences = text
         .split(/(?<=[.!?])\s+/)
         .map(sentence => sentence.trim())
@@ -122,16 +217,110 @@ function createHeading(tag, text) {
     return heading;
 }
 
+function addModalMetaItem(label, value) {
+    if (!hasRecipeValue(value)) {
+        return null;
+    }
+
+    const item = document.createElement("div");
+    item.className = "recipe-modal-meta-item";
+
+    const labelElement = document.createElement("span");
+    labelElement.textContent = label;
+
+    const valueElement = document.createElement("strong");
+    valueElement.textContent = displayValue(value);
+
+    item.append(labelElement, valueElement);
+    return item;
+}
+
+function openRecipeModal(recipe) {
+    recipeModalStatus.hidden = true;
+    recipeModalStatus.textContent = "";
+    const recipeTitle = displayValue(recipe.title);
+    recipeModalImage.src = getRecipeImageUrl(recipe);
+    recipeModalImage.alt = `${recipeTitle} food`;
+    recipeModalImage.classList.remove("recipe-image-fallback");
+    recipeModalImage.onerror = () => {
+        if (recipeModalImage.src.endsWith("/images/hero-food.png")) {
+            recipeModalImage.classList.add("recipe-image-fallback");
+            return;
+        }
+
+        recipeModalImage.src = "images/hero-food.png";
+    };
+    loadRecipeImage(recipe, recipeModalImage);
+    recipeModalTitle.textContent = recipeTitle;
+    const metaItems = [
+        addModalMetaItem("Cuisine", recipe.cuisine),
+        addModalMetaItem("Diet", recipe.diet),
+        addModalMetaItem("Preparation", recipe.prep_time),
+        addModalMetaItem("Cooking", recipe.cook_time)
+    ].filter(Boolean);
+
+    if (hasRecipeValue(recipe.servings)) {
+        metaItems.push(addModalMetaItem("Servings", recipe.servings));
+    }
+    recipeModalMeta.replaceChildren(...metaItems);
+    recipeModalMeta.hidden = metaItems.length === 0;
+
+    recipeModalIngredients.replaceChildren();
+    const ingredients = getIngredientList(recipe.ingredients);
+    if (ingredients.length === 0) {
+        const item = document.createElement("li");
+        item.textContent = "Ingredients not available.";
+        recipeModalIngredients.appendChild(item);
+    } else {
+        ingredients.forEach(ingredient => {
+            const item = document.createElement("li");
+            item.textContent = ingredient;
+            recipeModalIngredients.appendChild(item);
+        });
+    }
+
+    recipeModalInstructions.replaceChildren();
+    const steps = getInstructionSteps(recipe.instructions);
+    if (steps.length === 0) {
+        const item = document.createElement("li");
+        item.textContent = "Cooking instructions are not available.";
+        recipeModalInstructions.appendChild(item);
+    } else {
+        steps.forEach(step => {
+            const item = document.createElement("li");
+            item.textContent = step;
+            recipeModalInstructions.appendChild(item);
+        });
+    }
+
+    const hasDetails = hasRecipeValue(recipe.title)
+        || ingredients.length > 0
+        || steps.length > 0;
+    if (!hasDetails) {
+        recipeModalStatus.textContent =
+            "Recipe details are not available for this result.";
+        recipeModalStatus.hidden = false;
+    }
+
+    recipeModal.hidden = false;
+    document.body.classList.add("modal-open");
+    recipeModal.querySelector(".recipe-modal-close").focus();
+}
+
+function closeRecipeModal() {
+    recipeModal.hidden = true;
+    document.body.classList.remove("modal-open");
+    recipeModalStatus.hidden = true;
+}
+
 // Create a recipe card with readable sections
 function createRecipeCard(recipe, index) {
     const card = document.createElement("article");
     card.className = "recipe-card";
 
-    // Image placeholder
-    const emoji = document.createElement("div");
-    emoji.className = "recipe-emoji";
-    emoji.textContent = "🍲";
-    emoji.setAttribute("aria-hidden", "true");
+    const imageContainer = document.createElement("div");
+    imageContainer.className = "recipe-image-container";
+    imageContainer.appendChild(createRecipeImage(recipe));
 
     const content = document.createElement("div");
     content.className = "recipe-content";
@@ -217,14 +406,21 @@ function createRecipeCard(recipe, index) {
 
     details.append(summary, instructionContent);
 
+    const viewButton = document.createElement("button");
+    viewButton.type = "button";
+    viewButton.className = "view-recipe-button";
+    viewButton.textContent = "View Recipe";
+    viewButton.addEventListener("click", () => openRecipeModal(recipe));
+
     content.append(
         label,
         title,
         ingredientsSection,
-        details
+        details,
+        viewButton
     );
 
-    card.append(emoji, content);
+    card.append(imageContainer, content);
 
     return card;
 }
@@ -468,7 +664,39 @@ function createAISuggestionSection() {
         output.id = "aiSuggestionOutput";
         output.setAttribute("aria-live", "polite");
 
-        section.append(topLabel, heading, description, output);
+        const followUpForm = document.createElement("form");
+        followUpForm.className = "ai-follow-up-form";
+
+        const followUpInput = document.createElement("input");
+        followUpInput.type = "text";
+        followUpInput.className = "ai-follow-up-input";
+        followUpInput.placeholder = "Ask a follow-up about these recipes...";
+        followUpInput.setAttribute("aria-label", "Ask a follow-up question");
+
+        const followUpButton = document.createElement("button");
+        followUpButton.type = "submit";
+        followUpButton.className = "ai-follow-up-button";
+        followUpButton.textContent = "Ask AI";
+
+        followUpForm.append(followUpInput, followUpButton);
+        followUpForm.addEventListener("submit", event => {
+            event.preventDefault();
+            const followUp = followUpInput.value.trim();
+            if (!followUp) {
+                followUpInput.focus();
+                return;
+            }
+            followUpInput.value = "";
+            getAISuggestion(followUp, [], [], currentSearchId, true);
+        });
+
+        section.append(
+            topLabel,
+            heading,
+            description,
+            output,
+            followUpForm
+        );
 
         // Place AI suggestion above recipe cards.
         recipeResults.parentNode.insertBefore(section, recipeResults);
@@ -480,7 +708,13 @@ function createAISuggestionSection() {
 }
 
 // Request an AI suggestion from Flask/Groq
-async function getAISuggestion(query, recipes, userIngredients, searchId) {
+async function getAISuggestion(
+    query,
+    recipes,
+    userIngredients,
+    searchId,
+    isFollowUp = false
+) {
     const output = createAISuggestionSection();
 
     output.replaceChildren();
@@ -499,7 +733,9 @@ async function getAISuggestion(query, recipes, userIngredients, searchId) {
             body: JSON.stringify({
                 query,
                 ingredients: userIngredients,
-                recipes: recipes.slice(0, 5)
+                recipes: recipes.slice(0, 5),
+                context_recipe_ids: aiContextRecipeIds,
+                history: aiConversation
             })
         });
 
@@ -532,6 +768,14 @@ async function getAISuggestion(query, recipes, userIngredients, searchId) {
 
         output.appendChild(formatAISuggestion(suggestion));
 
+        aiContextRecipeIds = Array.isArray(data.context_recipe_ids)
+            ? data.context_recipe_ids
+            : aiContextRecipeIds;
+        if (isFollowUp || aiConversation.length === 0) {
+            aiConversation.push({ role: "user", content: query });
+        }
+        aiConversation.push({ role: "assistant", content: suggestion });
+
         const note = document.createElement("p");
         note.className = "ai-note";
         note.textContent =
@@ -549,7 +793,9 @@ async function getAISuggestion(query, recipes, userIngredients, searchId) {
         const paragraph = document.createElement("p");
         paragraph.className = "ai-error";
         paragraph.textContent =
-            "The recipes were found, but the AI suggestion is unavailable right now. Please try again in a moment.";
+            error instanceof Error && error.message
+                ? error.message
+                : "The recipes were found, but the AI suggestion is unavailable right now. Please try again in a moment.";
 
         output.appendChild(paragraph);
     }
@@ -566,6 +812,9 @@ async function searchRecipes(query) {
     }
 
     const searchId = ++currentSearchId;
+    lastSearchQuery = query;
+    aiContextRecipeIds = [];
+    aiConversation = [];
 
     searchButton.disabled = true;
     searchButton.textContent = "Searching...";
@@ -654,11 +903,21 @@ searchForm.addEventListener("submit", event => {
     searchRecipes(searchInput.value);
 });
 
-// Popular search buttons
-document.querySelectorAll(".suggestions button").forEach(button => {
+recipeModal.addEventListener("click", event => {
+    if (event.target.closest("[data-close-recipe-modal]")) {
+        closeRecipeModal();
+    }
+});
+
+document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && !recipeModal.hidden) {
+        closeRecipeModal();
+    }
+});
+
+document.querySelectorAll(".example-questions button").forEach(button => {
     button.addEventListener("click", () => {
         const query = button.dataset.query;
-
         if (!query) return;
 
         searchInput.value = query;

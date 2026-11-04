@@ -63,32 +63,25 @@
                         >
 
                         <button id="searchButton" type="submit">
-                            Find Recipes →
+                            Find Recipes / Ask AI →
                         </button>
 
                     </form>
 
-                    <!-- Popular Searches -->
-                    <div class="suggestions">
-
-                        <span>Popular searches</span>
-
-                        <button type="button" data-query="crispy potatoes">
-                            🥔 Potatoes
+                    <div class="example-questions" aria-label="Example questions">
+                        <span>Try asking:</span>
+                        <button type="button" data-query="I have potato, onion and tomato. What can I cook?">
+                            I have potato, onion and tomato. What can I cook?
                         </button>
-
-                        <button type="button" data-query="chicken recipes">
-                            🍗 Chicken
+                        <button type="button" data-query="Suggest an easy Indian dinner.">
+                            Suggest an easy Indian dinner.
                         </button>
-
-                        <button type="button" data-query="pasta recipes">
-                            🍝 Pasta
+                        <button type="button" data-query="Give me a Western chicken recipe.">
+                            Give me a Western chicken recipe.
                         </button>
-
-                        <button type="button" data-query="vegetarian recipes">
-                            🥗 Vegetarian
+                        <button type="button" data-query="Suggest a spicy vegetarian dish.">
+                            Suggest a spicy vegetarian dish.
                         </button>
-
                     </div>
 
                 </div>
@@ -160,27 +153,50 @@
 
     </main>
 
-
-    <!-- Footer -->
-    <footer>
-
-        <div class="footer-content">
-
-            <a href="#" class="footer-logo">
-                🍲 RecipeFinder AI
-            </a>
-
-            <p>
-                Discover recipes. Explore flavours. Cook with creativity.
-            </p>
-
-            <p class="footer-small">
-                Made with ❤️ using Flask, FAISS, Sentence Transformers and Groq.
-            </p>
-
-        </div>
-
-    </footer>
+    <div id="recipeModal" class="recipe-modal" hidden>
+        <div class="recipe-modal-backdrop" data-close-recipe-modal></div>
+        <section
+            class="recipe-modal-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="recipeModalTitle"
+        >
+            <button
+                type="button"
+                class="recipe-modal-close"
+                aria-label="Close recipe details"
+                data-close-recipe-modal
+            >
+                ×
+            </button>
+            <div class="recipe-modal-content">
+                <div class="recipe-modal-image-container">
+                    <img
+                        id="recipeModalImage"
+                        class="recipe-modal-image"
+                        src="images/hero-food.png"
+                        alt="Recipe food"
+                        loading="eager"
+                        decoding="async"
+                    >
+                </div>
+                <span class="recipe-label">RECIPE DETAILS</span>
+                <h2 id="recipeModalTitle"></h2>
+                <p id="recipeModalStatus" class="recipe-modal-status" role="status" hidden></p>
+                <div id="recipeModalMeta" class="recipe-modal-meta"></div>
+                <div class="recipe-modal-columns">
+                    <section>
+                        <h3>Ingredients</h3>
+                        <ul id="recipeModalIngredients" class="ingredient-list"></ul>
+                    </section>
+                    <section>
+                        <h3>Cooking instructions</h3>
+                        <ol id="recipeModalInstructions"></ol>
+                    </section>
+                </div>
+            </div>
+        </section>
+    </div>
 
 
     <script src="script.js"></script>

@@ -38,6 +38,7 @@ html {
 body {
     font-family: Inter, "Segoe UI", Arial, sans-serif;
     color: var(--text);
+    overflow-x: clip;
     background:
         radial-gradient(
             circle at 5% 5%,
@@ -348,50 +349,40 @@ section {
     cursor: wait;
 }
 
+/* Advanced filters */
 
-/* ==========================================
-   POPULAR SEARCHES
-   ========================================== */
-
-.suggestions {
+.example-questions {
+    width: 100%;
+    max-width: 650px;
+    margin: 0 0 20px;
     display: flex;
-    align-items: center;
     flex-wrap: wrap;
-
-    gap: 10px;
-
-    margin-top: 20px;
-}
-
-.suggestions > span {
+    align-items: center;
+    gap: 8px;
     color: var(--muted);
-    font-size: 0.88rem;
-    font-weight: 600;
-
-    margin-right: 4px;
+    font-size: 0.84rem;
 }
 
-.suggestions button {
-    padding: 8px 14px;
+.example-questions span {
+    font-weight: 700;
+}
 
+.example-questions button {
+    max-width: 100%;
+    padding: 7px 11px;
     border: 1px solid var(--border);
-    border-radius: 50px;
-
+    border-radius: 999px;
     background: var(--white);
     color: var(--text);
-
-    font-size: 0.86rem;
-    font-weight: 550;
-
-    transition: 0.2s ease;
+    font: inherit;
+    font-size: 0.8rem;
+    text-align: left;
 }
 
-.suggestions button:hover {
-    background: var(--green-light);
+.example-questions button:hover {
     border-color: #b8d4bd;
-
+    background: var(--green-light);
     color: var(--green-dark);
-    transform: translateY(-2px);
 }
 
 
@@ -506,13 +497,10 @@ section {
     box-shadow: var(--shadow-hover);
 }
 
-.recipe-emoji {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    min-height: 165px;
-
+.recipe-image-container {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
     background:
         radial-gradient(
             circle at 30% 20%,
@@ -520,8 +508,22 @@ section {
             transparent 30%
         ),
         linear-gradient(135deg, #e1f2e2, #fff0db);
+}
 
-    font-size: 3.5rem;
+.recipe-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.3s ease;
+}
+
+.recipe-card:hover .recipe-image {
+    transform: scale(1.03);
+}
+
+.recipe-image-fallback {
+    opacity: 0.92;
 }
 
 .recipe-content {
@@ -595,6 +597,184 @@ section {
     font-size: 0.88rem;
 }
 
+.view-recipe-button {
+    width: 100%;
+    margin-top: 18px;
+    padding: 11px 15px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--green);
+    color: var(--white);
+    font: inherit;
+    font-weight: 750;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.view-recipe-button:hover {
+    background: var(--green-dark);
+    transform: translateY(-1px);
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+.recipe-modal[hidden] {
+    display: none;
+}
+
+.recipe-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+}
+
+.recipe-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(25, 45, 28, 0.62);
+}
+
+.recipe-modal-dialog {
+    position: relative;
+    z-index: 1;
+    width: min(900px, 100%);
+    max-height: min(850px, 92vh);
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--white);
+    box-shadow: 0 24px 70px rgba(25, 45, 28, 0.28);
+}
+
+.recipe-modal-content {
+    padding: 36px;
+}
+
+.recipe-modal-image-container {
+    aspect-ratio: 16 / 8;
+    width: 100%;
+    margin-bottom: 28px;
+    overflow: hidden;
+    border-radius: 16px;
+    background:
+        radial-gradient(
+            circle at 30% 20%,
+            rgba(255,255,255,0.65),
+            transparent 30%
+        ),
+        linear-gradient(135deg, #e1f2e2, #fff0db);
+}
+
+.recipe-modal-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.recipe-modal-content h2 {
+    margin: 8px 48px 10px 0;
+    color: var(--green-dark);
+    font-size: clamp(1.7rem, 3vw, 2.4rem);
+    line-height: 1.2;
+}
+
+.recipe-modal-status {
+    margin: 0 48px 20px 0;
+    padding: 12px 14px;
+    border: 1px solid #eadbb8;
+    border-radius: 10px;
+    background: #fff8e9;
+    color: #74551e;
+    line-height: 1.5;
+}
+
+.recipe-modal-status[hidden] {
+    display: none;
+}
+
+.recipe-modal-close {
+    position: absolute;
+    top: 16px;
+    right: 18px;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: var(--white);
+    color: var(--green-dark);
+    font-size: 1.7rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.recipe-modal-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+    margin-bottom: 30px;
+}
+
+.recipe-modal-meta-item {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+    padding: 12px;
+    border-radius: 12px;
+    background: var(--green-light);
+}
+
+.recipe-modal-meta-item span {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.recipe-modal-meta-item strong {
+    overflow-wrap: anywhere;
+    color: var(--green-dark);
+    font-size: 0.92rem;
+}
+
+.recipe-modal-columns {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: 32px;
+}
+
+.recipe-modal-columns h3 {
+    margin: 0 0 13px;
+    color: var(--green-dark);
+}
+
+.recipe-modal-columns ul,
+.recipe-modal-columns ol {
+    margin: 0;
+    padding-left: 22px;
+    color: var(--text);
+    line-height: 1.7;
+}
+
+.recipe-modal-columns li {
+    margin-bottom: 9px;
+    overflow-wrap: anywhere;
+}
+
+.recipe-modal-columns section {
+    min-width: 0;
+}
+
+.recipe-modal-columns ol li::marker {
+    color: var(--green);
+    font-weight: 750;
+}
+
 
 /* ==========================================
    AI / RAG SUGGESTION PANEL
@@ -638,6 +818,34 @@ section {
 
     white-space: pre-wrap;
     overflow-wrap: anywhere;
+}
+
+.ai-follow-up-form {
+    display: flex;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+.ai-follow-up-input {
+    flex: 1;
+    min-width: 0;
+    padding: 11px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--white);
+}
+
+.ai-follow-up-button {
+    padding: 11px 16px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--green);
+    color: var(--white);
+    font-weight: 700;
+}
+
+.ai-follow-up-button:hover {
+    background: var(--green-dark);
 }
 
 #aiSuggestionOutput h1,
@@ -829,19 +1037,6 @@ a:focus-visible {
         font-size: 0.85rem;
     }
 
-    .suggestions {
-        gap: 8px;
-    }
-
-    .suggestions > span {
-        width: 100%;
-    }
-
-    .suggestions button {
-        padding: 8px 11px;
-        font-size: 0.82rem;
-    }
-
     .section-heading {
         display: block;
     }
@@ -856,8 +1051,8 @@ a:focus-visible {
         gap: 18px;
     }
 
-    .recipe-emoji {
-        min-height: 125px;
+    .recipe-image-container {
+        aspect-ratio: 16 / 9;
     }
 
     .recipe-content {
@@ -866,6 +1061,42 @@ a:focus-visible {
 
     .ai-suggestion-section {
         padding: 20px;
+    }
+
+    .ai-follow-up-form {
+        flex-direction: column;
+    }
+
+    .recipe-modal {
+        padding: 12px;
+    }
+
+    .recipe-modal-content {
+        padding: 24px 20px;
+    }
+
+    .recipe-modal-image-container {
+        aspect-ratio: 16 / 10;
+        margin-bottom: 22px;
+        border-radius: 12px;
+    }
+
+    .recipe-modal {
+        padding: 12px;
+    }
+
+    .recipe-modal-content {
+        padding: 28px 20px 22px;
+    }
+
+    .recipe-modal-meta {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-bottom: 24px;
+    }
+
+    .recipe-modal-columns {
+        grid-template-columns: 1fr;
+        gap: 24px;
     }
 
     .image-caption {
@@ -888,10 +1119,23 @@ a:focus-visible {
     }
 
     #searchForm {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
         padding: 6px;
     }
 
+    .search-icon {
+        align-self: center;
+    }
+
+    #searchInput {
+        width: auto;
+    }
+
     #searchButton {
+        grid-column: 1 / -1;
+        width: 100%;
+        min-height: 44px;
         font-size: 0.78rem;
     }
 

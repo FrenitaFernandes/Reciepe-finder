@@ -11,6 +11,13 @@ existing recipe metadata without changing the source CSV files or vector index.
 - Recipe ingredients and cooking instructions from the dataset.
 - FAISS and Sentence Transformers semantic search.
 - Optional Groq AI recommendations based only on returned database recipes.
+- Natural-language ingredient searches such as "I have potato, onion and
+  tomato. What can I cook?"
+- Follow-up questions about the retrieved recipes, including substitution
+  questions, through the AI panel.
+- Recipe cards and details use title-matched images from TheMealDB when
+  available, with the local hero image as a fallback. TheMealDB's public
+  test endpoint does not require an API key.
 - Markdown-aware, safely escaped AI rendering for headings, lists, bold text,
   and tables.
 
@@ -83,7 +90,10 @@ curl.exe http://127.0.0.1:5000/api/recipes/0
 ```
 
 `/api/ai-suggest` is a POST endpoint and requires JSON containing a query or
-ingredients plus recipe candidates returned by `/api/search`.
+ingredients. The backend performs its own FAISS retrieval; client-provided
+recipe candidates remain accepted for compatibility. Follow-up requests may
+include `context_recipe_ids` from the previous response and a bounded
+`history` array.
 
 ## Known limitations
 
